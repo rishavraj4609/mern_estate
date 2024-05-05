@@ -7,7 +7,14 @@ import {
   uploadBytesResumable,
 } from "firebase/storage";
 import { app } from "../firebase";
-import { updateUserStart, updateUserSuccess,updateUserFailure } from "../redux/user/userSlice.js";
+import {
+  updateUserStart,
+  updateUserSuccess,
+  updateUserFailure,
+  deleteUserFailure,
+  deleteUserStart,
+  deleteUserSuccess,
+} from "../redux/user/userSlice.js";
 import { useDispatch } from "react-redux";
 export default function Profile() {
   const fileRef = useRef(null);
@@ -48,34 +55,51 @@ export default function Profile() {
     );
   };
 
-   const handleChange =  (e) => {
+  const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
-   };
+  };
 
-   const handleSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       dispatch(updateUserStart());
-      const res = await fetch(`/api/user/update/${currentUser._id}`,
-        {
-          method: 'POST',
-          headers: {
-              'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(formData),
-        });
-        const data = await res.json();
-        if (data.success === false) {
-          dispatch(updateUserFailure(data.message));
-          return;
-        }
+      const res = await fetch(`/api/user/update/${currentUser._id}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+      const data = await res.json();
+      if (data.success === false) {
+        dispatch(updateUserFailure(data.message));
+        return;
+      }
 
-        dispatch(updateUserSuccess(data));
-        setUpdateSuccess(true);
+      dispatch(updateUserSuccess(data));
+      setUpdateSuccess(true);
     } catch (error) {
-       dispatch(updateUserFailure(error.message));
+      dispatch(updateUserFailure(error.message));
     }
-   }
+  };
+
+  const handleDeleteUser = async () => {
+    try {
+      dispatch(deleteUserStart());
+      const res = await fetch(`/api/user/delete/${currentUser._id}`,{
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (data.success === false) {
+        dispatch(deleteUserFailure(data.message));
+        return;
+      }
+      dispatch(deleteUserSuccess(data));
+
+    } catch (error) {
+      dispatch(deleteUserFailure(error.message));
+    }
+  };
   return (
     <div className="p-3 max-w-lg mx-auto">
       <h1 className="text-4xl font-semibold text-center my-7 ">Profile</h1>
@@ -108,6 +132,7 @@ export default function Profile() {
             ""
           )}
         </p>
+
         <input
           type="text"
           placeholder="username"
@@ -130,20 +155,27 @@ export default function Profile() {
           onChange={handleChange}
           id="password"
           className="border p-3 rounded-lg"
-          
         />
-        <button disabled={loading} className="bg-slate-700 text-white rounded-lg p-3 hover:opacity-95 disabled:opacity-80 ">
-          {loading ? 'Loading...': 'UPDATE'}
+        <button
+          disabled={loading}
+          className="bg-slate-700 text-white rounded-full p-3 hover:opacity-95 disabled:opacity-80 "
+        >
+          {loading ? "Loading..." : "UPDATE"}
         </button>
       </form>
       <div className="flex justify-between mt-5 ">
-        <span className="text-red-600 cursor-pointer">Delete account!</span>
+        <span
+          onClick={handleDeleteUser}
+          className="text-red-600 cursor-pointer"
+        >
+          Delete account!
+        </span>
         <span className="text-red-600 cursor-pointer">Sign out</span>
       </div>
-      <p className="text-red-700 mt-5">{error ? error : ''}</p>
-      <p className="text-green-700 mt-5">{updateSuccess ? 'User updated successfully!' : ''}</p>
-
-      
+      <p className="text-red-700 mt-5">{error ? error : ""}</p>
+      <p className="text-green-700 mt-5">
+        {updateSuccess ? "User updated successfully!" : ""}
+      </p>
     </div>
   );
 }

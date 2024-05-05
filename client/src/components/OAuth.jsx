@@ -29,7 +29,7 @@ export default function OAuth() {
         }
     };
   return (
-    <button onClick={handleGoogleClick} type='button' className='bg-rose-400 text-white p-3 rounded-lg uppercase  hover:opacatiy-95'>
+    <button onClick={handleGoogleClick} type='button' className='bg-rose-400 text-white p-3 rounded-full uppercase  hover:opacatiy-95'>
         Continue with google
     </button>
   )
